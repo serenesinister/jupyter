@@ -1,0 +1,136 @@
+Esqueletos
+
+o esqueleto de A pode ser expresso em termos de erosões e averturas. Ou seja ,pode ser comprovado que S(A) = U (iniciando em k=0 até k) Sk(A) com sk(A)=(A⊖kB)-(A⊖kB).B onde B é um elemento estruturante e (A⊖kB) indica K erosões sucessivas de A. a formula pode ser obtida como a união dos subconjuntos dos esqueletos Sk(A). A pode ser reconstruido a partir desses subconjuntos utilizando a equação A= U(de k=0 até k) (Sk(A)⊕KB) na qual (Sk(A)+kB) denota k dilatações sucessivas de Sk(A), isto é, (Sk(A)⊕ kB) = ((...((Sk(A)⊕B)⊕B)⊕...)⊕B)
+
+Como mostra a Figura 9.23, a noção de um esque-
+leto, S(A), de um conjunto A é intuitivamente simples.
+
+Deduzimos desta figura que
+
+e
+a b
+
+c d
+
+Figura 9.22 (a) Conjunto A. (b) Complemento de A. (c) Resultado do
+
+afinamento do complemento de A. (d) Espessamento obtido comple-
+mentando (c). (e) Resultado final, sem pontos desconectados.
+
+09 gonz0709_cap09 BR.indd 429 12/2/09 7:20 PM
+
+430 Processamento digital de imagens
+(a) Se z é um ponto de S(A) e (D)z
+
+é o maior disco
+centrado em z que está contido em A, não se pode
+encontrar um disco maior (não necessariamente
+centrado em z) contendo (D)z
+
+e contido em A. O
+
+disco (D)z
+é chamado de disco máximo.
+
+(b)O disco (D)z
+
+toca a fronteira de A em dois ou mais
+
+lugares diferentes.
+O esqueleto de A pode ser expresso em termos de
+erosões e aberturas. Ou seja, pode ser comprovado [Serra
+(1982)] que
+
+S A S Ak
+k
+K
+( ) ( ) =
+=0
+∪ (9.5-11)
+
+com
+Sk
+(A) = (AkB) – (AkB) ̊B (9.5-12)
+onde B é um elemento estruturante, e (AkB) indica k
+erosões sucessivas de A:
+(AkB) = ((...((AB)B)...)B) (9.5-13)
+
+k vezes e K é o último passo iterativo antes de A ser erodi-
+do até se tornar um conjunto vazio. Em outras palavras,
+
+K = máx{k|(AkB) ≠ } (9.5-14)
+A formulação dada nas equações 9.5-11 e 9.5-12
+
+afirma que S(A) pode ser obtido como a união dos subcon-
+juntos do esqueleto Sk
+
+(A) do esqueleto. Além disso, pode ser
+
+a b
+
+c d
+
+Figura 9.23 (a) Conjunto A. (b) Diversas posições dos discos máximos
+com os centros sobre o esqueleto de A. (c) Outro disco máximo em um
+segmento diferente do esqueleto de A. (d) Esqueleto completo.
+
+comprovado que A pode ser reconstruído a partir desses
+subconjuntos utilizando a equação
+A S A kB k
+k
+K
+=
+=
+( ( ) )
+0
+∪ ⊕ (9.5-15)
+
+na qual (Sk
+
+(A)⊕kB) denota k dilatações sucessivas de
+
+Sk
+(A), isto é,
+(Sk
+(A)⊕kB) = ((...((Sk
+
+(A)⊕B)⊕B)⊕...)⊕B) (9.5-16)
+Exemplo 9.8 Calculando o esqueleto de uma figura simples.
+A Figura 9.24 ilustra os conceitos que acabamos de
+discutir. A primeira coluna mostra o conjunto original (no
+topo) e duas erosões por um elemento estruturante B. Note
+que mais uma erosão de A produziria um conjunto vazio,
+
+portanto K = 2 neste caso. A segunda coluna mostra a aber-
+tura por B dos conjuntos da primeira coluna. Esses resultados
+
+podem ser facilmente explicados pela caracterização de ajus-
+te da operação de abertura discutida em relação à Figura 9.8.
+
+A terceira coluna contém simplesmente as diferenças de
+conjunto entre a primeira e a segunda colunas.
+A quarta coluna contém dois esqueletos parciais e o
+resultado final (na parte de baixo da coluna). O esqueleto
+final não só é mais espesso do que deveria mas, o que é mais
+
+importante, não está conectado. Este resultado não é ines-
+perado, já que nada na formulação anterior do esqueleto
+
+morfológico garante a conectividade. A morfologia produz uma
+formulação elegante em termos de erosões e aberturas de um
+dado conjunto. No entanto, as formulações heurísticas, como
+o algoritmo desenvolvido na Seção 11.1.7, são necessárias se,
+como geralmente é o caso, for exigido que o esqueleto seja o
+mais fino possível, conectado e pouco erodido.
+A quinta coluna mostra S0
+(A), S1
+(A)⊕B e (S2
+(A)⊕2B) =
+
+(S2
+
+(A)⊕B)⊕B. Finalmente, a última coluna mostra a re-
+construção de um conjunto A que, de acordo com a Equação
+
+9.5-15, é a união dos subconjuntos do esqueleto dilatado
+mostrados na quinta coluna.

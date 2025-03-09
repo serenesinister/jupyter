@@ -1,0 +1,109 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Função de erosão
+def erosao(imagem, elemento_estruturante):
+    kernel_height, kernel_width = elemento_estruturante.shape
+    pad_height = kernel_height // 2
+    pad_width = kernel_width // 2
+    imagem_erodida = np.zeros_like(imagem, dtype=np.uint8)
+
+    for i in range(pad_height, imagem.shape[0] - pad_height):
+        for j in range(pad_width, imagem.shape[1] - pad_width):
+            region = imagem[i - pad_height:i + pad_height + 1, j - pad_width:j + pad_width + 1]
+            if np.all(region[elemento_estruturante == 1] == 255):
+                imagem_erodida[i, j] = 255
+    return imagem_erodida
+
+# Função de dilatação
+def dilatacao(imagem, elemento_estruturante):
+    kernel_height, kernel_width = elemento_estruturante.shape
+    pad_height = kernel_height // 2
+    pad_width = kernel_width // 2
+    imagem_dilatada = np.zeros_like(imagem, dtype=np.uint8)
+
+    for i in range(pad_height, imagem.shape[0] - pad_height):
+        for j in range(pad_width, imagem.shape[1] - pad_width):
+            region = imagem[i - pad_height:i + pad_height + 1, j - pad_width:j + pad_width + 1]
+            if np.any(region[elemento_estruturante == 1] == 255):
+                imagem_dilatada[i, j] = 255
+    return imagem_dilatada
+
+# Função de abertura (erosão seguida de dilatação)
+def abertura(imagem, elemento_estruturante):
+    imagem_erodida = erosao(imagem, elemento_estruturante)
+    imagem_aberta = dilatacao(imagem_erodida, elemento_estruturante)
+    return imagem_aberta
+
+# Função de fechamento (dilatação seguida de erosão)
+def fechamento(imagem, elemento_estruturante):
+    imagem_dilatada = dilatacao(imagem, elemento_estruturante)
+    imagem_fechada = erosao(imagem_dilatada, elemento_estruturante)
+    return imagem_fechada
+
+# Função de esqueletonização (segundo Gonzalez e Woods)
+def esqueletizacao(imagem_binaria, elemento_estruturante):
+    # Etapa 1: Realizar abertura e fechamento para limpar a imagem
+    imagem_binaria = abertura(imagem_binaria, elemento_estruturante)
+    imagem_binaria = fechamento(imagem_binaria, elemento_estruturante)
+
+    # Etapa 2: Inicializar o esqueleto
+    esqueleto = np.zeros_like(imagem_binaria, dtype=np.uint8)
+    imagem_atual = imagem_binaria.copy()
+
+    while True:
+        # Etapa 3: Erosão da imagem atual
+        imagem_erodida = erosao(imagem_atual, elemento_estruturante)
+
+        # Etapa 4: Subtração da imagem erodida da imagem atual (imagem do esqueleto)
+        esqueleto_temp = imagem_atual - imagem_erodida
+        esqueleto = np.bitwise_or(esqueleto, esqueleto_temp)
+
+        # Etapa 5: Atualizar a imagem atual para a próxima iteração
+        imagem_atual = imagem_erodida
+
+        # Condição de parada: Se não houver mais pixels brancos, interrompa o processo
+        if np.count_nonzero(imagem_atual) == 0:
+            break
+
+    return esqueleto
+
+# Função para carregar e binarizar uma imagem manualmente
+def carregar_e_binarizar_imagem(caminho_imagem):
+    # Carregar imagem usando matplotlib
+    imagem = plt.imread(caminho_imagem)
+
+    # Binarizar a imagem
+    imagem_binaria = (imagem > 0.5) * 255  # Binariza, assume que valores > 0.5 são brancos (255)
+    imagem_binaria = imagem_binaria.astype(np.uint8)
+    
+    return imagem_binaria
+
+# Carregar e binarizar a imagem
+imagem_binaria = carregar_e_binarizar_imagem(r"C:\Users\Wemerson\Downloads\digital.png")
+
+# Definir o elemento estruturante (usando cruz 3x3)
+elemento_estruturante = np.array([[0,1,0],
+                                  [1,1,1],
+                                  [0,1,0]], dtype=np.uint8)
+
+# Realizar a esqueletonização
+esqueleto_resultado = esqueletizacao(imagem_binaria, elemento_estruturante)
+
+# Exibir a imagem original e o esqueleto
+plt.figure(figsize=(10, 5))
+
+# Imagem original
+plt.subplot(1, 2, 1)
+plt.imshow(imagem_binaria, cmap='gray')
+plt.title('Imagem Binária')
+plt.axis('off')
+
+# Imagem do esqueleto
+plt.subplot(1, 2, 2)
+plt.imshow(esqueleto_resultado, cmap='gray')
+plt.title('Esqueleto Resultante')
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()

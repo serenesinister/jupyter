@@ -1,0 +1,104 @@
+# Função de erosão (A ⊖ B): Erosão de uma imagem A com o elemento estruturante B.
+def erosao(imagem, elemento_estruturante):
+    m, n = imagem.shape  # Dimensões da imagem
+    h, w = elemento_estruturante.shape  # Dimensões do elemento estruturante
+    resultado = np.zeros_like(imagem)  # Imagem de saída
+    pad_h, pad_w = h // 2, w // 2  # Padding para bordas
+
+    # Iteração sobre a imagem (ignorando as bordas)
+    for i in range(pad_h, m - pad_h):
+        for j in range(pad_w, n - pad_w):
+            region = imagem[i - pad_h:i + pad_h + 1, j - pad_w:j + pad_w + 1]  # Região da imagem ao redor do pixel (i, j)
+            
+            # A erosão só mantém o pixel se a região for totalmente compatível com o elemento estruturante
+            if np.all(region[elemento_estruturante == 1] == 1):
+                resultado[i, j] = 1
+    return resultado  # Retorna a imagem erodida
+
+# Função de dilatação (A ⊕ B): Dilatação de uma imagem A com o elemento estruturante B.
+def dilatacao(imagem, elemento_estruturante):
+    m, n = imagem.shape  # Dimensões da imagem
+    h, w = elemento_estruturante.shape  # Dimensões do elemento estruturante
+    resultado = np.zeros_like(imagem)  # Imagem de saída
+    pad_h, pad_w = h // 2, w // 2  # Padding para bordas
+
+    # Iteração sobre a imagem (ignorando as bordas)
+    for i in range(pad_h, m - pad_h):
+        for j in range(pad_w, n - pad_w):
+            region = imagem[i - pad_h:i + pad_h + 1, j - pad_w:j + pad_w + 1]  # Região da imagem ao redor do pixel (i, j)
+            
+            # A dilatação acontece se pelo menos um pixel da região corresponder ao elemento estruturante
+            if np.any(region[elemento_estruturante == 1] == 1):
+                resultado[i, j] = 1
+    return resultado  # Retorna a imagem dilatada
+
+
+# Abertura (A ⊖ B) ⊕ B: Primeiro a erosão (A ⊖ B) e depois a dilatação ((A ⊖ B) ⊕ B)
+def abertura(imagem, elemento_estruturante):
+    return dilatacao(erosao(imagem, elemento_estruturante), elemento_estruturante)
+
+# Fechamento (A ⊕ B) ⊖ B: Primeiro a dilatação (A ⊕ B) e depois a erosão ((A ⊕ B) ⊖ B)
+def fechamento(imagem, elemento_estruturante):
+    return erosao(dilatacao(imagem, elemento_estruturante), elemento_estruturante)
+
+# Função de esqueletização (usando erosões sucessivas)
+def esqueletizacao(imagem, elemento_estruturante, max_k=10):
+    A = imagem.copy()
+    
+    # Limpeza com abertura e fechamento (operação preparatória)
+    A = abertura(A, elemento_estruturante)  # Abertura para remoção de ruído
+    A = fechamento(A, elemento_estruturante)  # Fechamento para suavizar os limites
+
+    # Criar a imagem de esqueleto (inicialmente toda preta)
+    esqueleto = np.zeros_like(imagem)
+
+    for k in range(max_k):
+        # Erosão sucessiva de A (A ⊖ B) repetido k vezes
+        A_erosao = erosao(A, elemento_estruturante)
+        
+        # Dilatação da erosão (A ⊖ B) ⊕ B
+        A_dilatacao = dilatacao(A_erosao, elemento_estruturante)
+        
+        # Calcular a diferença entre a imagem original e a dilatação da erosão para obter o esqueleto (miolo)
+        esqueleto_k = A - A_dilatacao  # Sk(A) = (A ⊖ B) - (A ⊖ B) ⊕ B
+        
+        # Acumular o esqueleto (união dos esqueletos parciais)
+        esqueleto = np.bitwise_or(esqueleto, esqueleto_k)
+        
+        # Atualizar A para a próxima iteração (acumula a erosão sucessiva)
+        A = A_erosao
+        
+        # Se a imagem se tornar completamente vazia, parar
+        if np.all(A == 0):
+            break
+            
+    return esqueleto
+
+# Função para mostrar a imagem
+def mostrar_imagem(imagem, titulo='Imagem'):
+    plt.imshow(imagem, cmap='gray', interpolation='nearest')
+    plt.title(titulo)
+    plt.axis('off')
+    plt.show()
+
+# Função para carregar a imagem
+def carregar_imagem(caminho):
+    imagem = plt.imread(caminho)
+    if len(imagem.shape) == 3:
+        imagem = np.mean(imagem, axis=2)
+    imagem = (imagem > 0.5).astype(np.uint8)
+    return imagem
+
+# Caminho da imagem
+imagem = carregar_imagem(r"C:\Users\Wemerson\Downloads\digital.png")
+
+# Elemento estruturante (kernel 3x3 em forma de cruz)
+elemento_estruturante = np.array([[0,1,0],
+                                  [1,1,1],
+                                  [0,1,0]], dtype=np.uint8)
+
+# Realizar a esqueletização
+imagem_esqueleto = esqueletizacao(imagem, elemento_estruturante)
+
+# Exibir o resultado da esqueletização
+mostrar_imagem(imagem_esqueleto, 'Imagem Esqueleto')

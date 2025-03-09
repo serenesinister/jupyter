@@ -1,0 +1,78 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+def erosao(imagem, elemento_estruturante):
+    m, n = imagem.shape
+    h, w = elemento_estruturante.shape
+    resultado = np.zeros_like(imagem)
+    pad_h, pad_w = h // 2, w // 2
+    
+    for i in range(pad_h, m - pad_h):
+        for j in range(pad_w, n - pad_w):
+            region = imagem[i - pad_h:i + pad_h + 1, j - pad_w:j + pad_w + 1]
+            if np.all(region[elemento_estruturante == 1] == 1):
+                resultado[i, j] = 1
+    return resultado
+
+def dilatacao(imagem, elemento_estruturante):
+    m, n = imagem.shape
+    h, w = elemento_estruturante.shape
+    resultado = np.zeros_like(imagem)
+    pad_h, pad_w = h // 2, w // 2
+    
+    for i in range(pad_h, m - pad_h):
+        for j in range(pad_w, n - pad_w):
+            region = imagem[i - pad_h:i + pad_h + 1, j - pad_w:j + pad_w + 1]
+            if np.any(region[elemento_estruturante == 1] == 1):
+                resultado[i, j] = 1
+    return resultado
+
+def abertura(imagem, elemento_estruturante):
+    return dilatacao(erosao(imagem, elemento_estruturante), elemento_estruturante)
+
+def fechamento(imagem, elemento_estruturante):
+    return erosao(dilatacao(imagem, elemento_estruturante), elemento_estruturante)
+
+def esqueletizacao(imagem, elemento_estruturante, max_k=10):
+    A = imagem.copy()
+    esqueleto_final = np.zeros_like(imagem)
+    
+    for k in range(max_k):
+        A_erosao = A.copy()
+        for _ in range(k):
+            A_erosao = erosao(A_erosao, elemento_estruturante)
+            if np.all(A_erosao == 0):
+                break
+        A_abertura = dilatacao(A_erosao, elemento_estruturante)
+        sk_A = A_erosao - A_abertura
+        esqueleto_final = np.maximum(esqueleto_final, sk_A)
+        if np.all(A_erosao == 0):
+            break
+    return esqueleto_final
+
+def mostrar_imagem(imagem, titulo='Imagem'):
+    plt.imshow(imagem, cmap='gray', interpolation='nearest')
+    plt.title(titulo)
+    plt.axis('off')
+    plt.show()
+
+def carregar_imagem(caminho):
+    imagem = plt.imread(caminho)
+    if len(imagem.shape) == 3:
+        imagem = np.mean(imagem, axis=2)
+    imagem = (imagem > 0.5).astype(np.uint8)
+    return imagem
+
+imagem = carregar_imagem(r"C:\Users\Wemerson\Downloads\digital.png")
+
+elemento_estruturante = np.array([[0,1,0],
+                                  [1,1,1],
+                                  [0,1,0]], dtype=np.uint8)
+
+imagem_limpa = abertura(imagem, elemento_estruturante)
+imagem_limpa = fechamento(imagem_limpa, elemento_estruturante)
+
+imagem_esqueleto = esqueletizacao(imagem_limpa, elemento_estruturante)
+
+mostrar_imagem(imagem_limpa, 'Imagem Limpa')
+mostrar_imagem(imagem_esqueleto, 'Imagem Esqueleto')

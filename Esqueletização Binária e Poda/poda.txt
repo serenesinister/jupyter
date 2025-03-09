@@ -1,0 +1,220 @@
+Poda
+Os métodos de poda são um complemento essencial
+para os algoritmos de afinamento e esqueletização, uma
+
+vez que esses procedimentos costumam deixar compo-
+nentes parasitas que precisam ser “limpados” por meio de
+
+um pós-processamento. Começaremos a discussão com um
+problema de poda e depois desenvolveremos uma solução
+morfológica baseada no material introduzido nas seções
+anteriores. Assim, aproveitamos essa oportunidade para
+
+ilustrar como proceder para resolver um problema com-
+binando várias das técnicas discutidas até este ponto.
+
+Uma abordagem comum em matéria de reconheci-
+mento automático de caracteres escritos à mão é feita a
+
+09 gonz0709_cap09 BR.indd 430 12/2/09 7:20 PM
+
+Processamento morfológico de imagens 431
+
+partir da análise da forma do esqueleto de cada caractere.
+
+Esses esqueletos normalmente são corrompidos por com-
+ponentes “espúrios”(parasitas). Os componentes parasitas
+
+são causados durante a erosão pela descontinuidade nos
+segmentos que compõem os caracteres. Desenvolvemos
+
+uma técnica morfológica para tratar esse problema, par-
+tindo do pressuposto de que o tamanho do componente
+
+parasita não excede um número específico de pixels.
+A Figura 9.25(a) mostra o esqueleto de uma letra
+“a” escrita à mão*
+
+. O componente parasita na parte à es-
+querda do caractere é um exemplo do que queremos re-
+mover. A solução baseia-se na supressão da ramificação
+
+parasita eliminando-se sucessivamente seu ponto extre-
+mo. Evidentemente, isso também reduz (ou elimina) ou-
+tras ramificações do caractere, mas, na ausência de outras
+
+informações estruturais, a hipótese neste exemplo é que
+
+qualquer ramificação com três pixels ou menos deve ser
+eliminada. O afinamento de um conjunto de entrada A
+
+por uma sequência de elementos estruturantes projeta-
+dos para detectar apenas extremidades consegue o resul-
+tado desejado. Ou seja, considere que
+
+X1 = A⊗{B} (9.5-17)
+
+na qual {B} denota a sequência de elementos estruturan-
+tes mostrada nas figuras 9.25(b) e (c) (veja a Equação
+
+9.5-7 sobre as sequências de elementos estruturantes).
+Esta consiste em dois elementos estruturantes diferentes,
+
+cada qual rotacionado em 90°, para um total de oito ele-
+mentos. O “×” na Figura 9.25(b) significa uma condição
+
+“não importa”, no sentido de que não importa se o pixel
+nessa posição tem valor 0 ou 1. Numerosos resultados
+relatados na literatura sobre morfologia baseiam-se na
+
+utilização de um único elemento estruturante, semelhan-
+te ao da Figura 9.25(b), mas que possui condições “não
+
+importa” ao longo de toda a primeira coluna. Isso é incor-
+reto. Por exemplo, este elemento identificaria o ponto lo-
+1
+
+0
+k
+
+2
+
+B
+S(A) A
+A  kB (A  kB)  B Sk(A) Sk(A)  kB Sk(A)  kB k  0
+K
+
+Sk(A) k  0
+K
+
+Figura 9.24 Implementação das equações 9.5-11 até 9.5-15. O conjunto original está na parte superior esquerda e seu esqueleto morfológico
+está na parte de baixo da quarta coluna. O conjunto reconstruído está na parte de baixo da sexta coluna.
+
+* Podemos definir um ponto final como o ponto central de uma re-
+gião 3 × 3, que satisfaz qualquer um dos arranjos matriciais das
+
+figuras 9.25(b) ou (c).
+
+09 gonz0709_cap09 BR.indd 431 12/2/09 7:20 PM
+
+432 Processamento digital de imagens
+
+calizado na oitava linha, quarta coluna da Figura 9.25(a)
+como uma extremidade, eliminando-o e interrompendo
+a conectividade no segmento.
+Aplicar a Equação 9.5-17 em A três vezes produz o
+conjunto X1
+definido na Figura 9.25(d). O próximo passo
+é “restaurar” a forma original do caractere, mas sem as
+
+ramificações parasitas. Para fazer isso, primeiro é neces-
+sário formar um conjunto X2
+
+contendo todas as extremi-
+dades de X1
+
+[Figura 9.25(e)]:
+X X Bk
+k
+2 1
+1
+8
+=
+=
+∪( )  (9.5-18)
+
+na qual Bk
+são os mesmos detectores de extremidades
+mostrados nas figuras 9.25(b) e (c). O próximo passo é a
+dilatação das extremidades três vezes, usando o conjunto
+A como um delimitador:*
+
+X3 = (X2⊕H)∩A (9.5-19)
+sendo que H é um elemento estruturante 3 × 3 de 1s
+e a interseção com A é aplicada após cada etapa. Como
+no caso do preenchimento de região e da extração de
+
+componentes conexos, esse tipo de dilatação condicional
+evita a criação de elementos de valor 1 fora da região de
+interesse, como evidenciado pelo resultado mostrado na
+Figura 9.25(f). Por fim, a união de X3
+e X1
+
+leva ao resul-
+tado desejado,
+
+X4 = X1∪X3 (9.5-20)
+
+na Figura 9.25(g).
+
+Em cenários mais complexos, a utilização da Equa-
+ção 9.5-19 às vezes pega “dicas” a respeito de algumas ra-
+mificações parasitas. Esta condição poderá ocorrer quando
+
+as extremidades dessas ramificações estiverem próximas
+ao esqueleto. Embora a Equação 9.5-17 possa eliminá-
+
+-las, elas podem ser apanhadas novamente durante a di-
+latação porque são pontos válidos em A. A não ser que
+
+todos os elementos parasitas sejam apanhados novamen-
+te (um caso raro se esses elementos são pequenos se com-
+parados com as partes válidas dos caracteres), detectá-los
+
+e eliminá-los é fácil porque são regiões desconectadas.
+Neste momento, um pensamento natural é que
+
+deve haver maneiras mais fáceis de resolver este proble-
+ma. Por exemplo, poderíamos apenas rastrear todos os
+
+pontos eliminados e simplesmente reconectar os pon-
+tos apropriados a todas as extremidades deixadas após a
+
+%
+ %
+%
+%
+JLUDU8
+
+%
+ %
+%
+%
+JLUDU8
+
+*
+*
+
+a
+
+d
+
+f
+
+e
+b
+
+c
+
+g
+
+Figura 9.25 (a) Imagem original. (b) e (c) Elementos estruturantes utilizados para eliminar os pontos extremos. (d) Resultado de três ciclos de
+afinamento. (e) Extremidades de (d). (f) Dilatação das extremidades condicionadas em (a). (g) Imagem podada.
+
+* A Equação 9.5-19 é a base para a reconstrução morfológica por
+dilatação, conforme será explicado na próxima seção.
+
+09 gonz0709_cap09 BR.indd 432 12/2/09 7:21 PM
+
+Processamento morfológico de imagens 433
+
+aplicação da Equação 9.5-17. Essa opção é válida, mas
+a vantagem da formulação apresentada é que o uso de
+operações morfológicas simples resolve inteiramente o
+problema. Em situações práticas, quando muitas dessas
+ferramentas estiverem disponíveis, a vantagem é que um
+
+novo algoritmo não precisa ser reescrito. Simplesmen-
+te combinamos as funções morfológicas necessárias em
+
+uma sequência de operações.

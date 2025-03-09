@@ -1,0 +1,141 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from skimage.io import imread
+
+# Função para erosão de uma imagem binária com um elemento estruturante
+def erosao(imagem, elemento_estruturante):
+    imagem = imagem.astype(np.uint8)
+    elemento_estruturante = elemento_estruturante.astype(np.uint8)
+    
+    # Tamanho do kernel
+    kernel_height, kernel_width = elemento_estruturante.shape
+    pad_height = kernel_height // 2
+    pad_width = kernel_width // 2
+    
+    # Criar a imagem resultante (inicialmente toda preta)
+    imagem_erosionada = np.zeros_like(imagem, dtype=np.uint8)
+
+    # Percorrer a imagem
+    for i in range(pad_height, imagem.shape[0] - pad_height):
+        for j in range(pad_width, imagem.shape[1] - pad_width):
+            # Aplicar o elemento estruturante sobre a região da imagem
+            region = imagem[i - pad_height:i + pad_height + 1, j - pad_width:j + pad_width + 1]
+            # Verifica se todos os pixels do elemento estruturante estão presentes (lógica AND)
+            if np.all(region[elemento_estruturante == 1] == 255):
+                imagem_erosionada[i, j] = 255
+    return imagem_erosionada
+
+# Função para dilatação de uma imagem binária com um elemento estruturante
+def dilatacao(imagem, elemento_estruturante):
+    imagem = imagem.astype(np.uint8)
+    elemento_estruturante = elemento_estruturante.astype(np.uint8)
+    
+    # Tamanho do kernel
+    kernel_height, kernel_width = elemento_estruturante.shape
+    pad_height = kernel_height // 2
+    pad_width = kernel_width // 2
+    
+    # Criar a imagem resultante (inicialmente toda preta)
+    imagem_dilatada = np.zeros_like(imagem, dtype=np.uint8)
+
+    # Percorrer a imagem
+    for i in range(pad_height, imagem.shape[0] - pad_height):
+        for j in range(pad_width, imagem.shape[1] - pad_width):
+            # Aplicar o elemento estruturante sobre a região da imagem
+            region = imagem[i - pad_height:i + pad_height + 1, j - pad_width:j + pad_width + 1]
+            # Verifica se algum pixel do elemento estruturante está presente (lógica OR)
+            if np.any(region[elemento_estruturante == 1] == 255):
+                imagem_dilatada[i, j] = 255
+
+    return imagem_dilatada
+
+# Função para realizar abertura (erosão seguida de dilatação)
+def abertura(imagem, estrutura):
+    erosao_resultado = erosao(imagem, estrutura)
+    return dilatacao(erosao_resultado, estrutura)
+
+# Função para realizar fechamento (dilatação seguida de erosão)
+def fechamento(imagem, estrutura):
+    dilatacao_resultado = dilatacao(imagem, estrutura)
+    return erosao(dilatacao_resultado, estrutura)
+
+# Função de esqueletização
+def esqueletizacao(imagem, estrutura, K=10):
+    esqueleto = np.zeros_like(imagem)
+    
+    # Para cada iteração de k, aplica a operação (A ⊖ kB) - (A ⊖ kB) . B
+    for k in range(K):
+        erosao_k = erosao(imagem, estrutura)
+        erosao_k_dilatada = dilatacao(erosao_k, estrutura)
+        
+        # Sk(A) = (A ⊖ kB) - (A ⊖ kB) . B
+        Sk_A = erosao_k - erosao_k_dilatada
+        
+        # Adiciona ao esqueleto
+        esqueleto = np.logical_or(esqueleto, Sk_A)
+        
+        # Atualiza a imagem A para a próxima iteração
+        imagem = imagem - Sk_A
+    
+    return esqueleto.astype(np.uint8)
+
+# Função para reconstruir a imagem A a partir do esqueleto
+def reconstruir(imagem, estrutura, K=10):
+    reconstruido = np.zeros_like(imagem)
+    
+    # Para cada iteração de k, realiza a dilatação sucessiva
+    for k in range(K):
+        dilatacao_k = dilatacao(imagem, estrutura)
+        
+        # Adiciona ao conjunto reconstruído
+        reconstruido = np.logical_or(reconstruido, dilatacao_k)
+        
+        # Atualiza a imagem A para a próxima iteração
+        imagem = imagem - dilatacao_k
+    
+    return reconstruido.astype(np.uint8)
+
+# Leitura da imagem binária
+imagem = imread(r"C:\Users\Wemerson\Downloads\digital.png")
+
+# Garantir que a imagem é binária de origem (0 ou 255)
+# Caso seja necessário, confira o intervalo de valores de sua imagem e ajuste.
+# Exemplo de binarização caso a imagem contenha valores 0 ou 1:
+imagem = (imagem > 0).astype(np.uint8) * 255  # Assegurando que a imagem seja binária (0 ou 255)
+
+# Elemento estruturante: um quadrado de 3x3
+estrutura = np.array([
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1]
+])
+
+# Aplicar abertura e fechamento antes da esqueletização
+imagem_aberta = abertura(imagem, estrutura)
+imagem_fechada = fechamento(imagem, estrutura)
+
+# Esqueletização
+esqueleto = esqueletizacao(imagem_fechada, estrutura)
+
+# Reconstrução da imagem a partir do esqueleto
+imagem_reconstruida = reconstruir(esqueleto, estrutura)
+
+# Exibir os resultados
+fig, axs = plt.subplots(1, 4, figsize=(12, 4))
+axs[0].imshow(imagem, cmap='gray')
+axs[0].set_title("Imagem Original")
+axs[0].axis('off')
+
+axs[1].imshow(imagem_aberta, cmap='gray')
+axs[1].set_title("Abertura")
+axs[1].axis('off')
+
+axs[2].imshow(esqueleto, cmap='gray')
+axs[2].set_title("Esqueleto")
+axs[2].axis('off')
+
+axs[3].imshow(imagem_reconstruida, cmap='gray')
+axs[3].set_title("Imagem Reconstruída")
+axs[3].axis('off')
+
+plt.show()
