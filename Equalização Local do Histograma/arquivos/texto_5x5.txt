@@ -1,0 +1,15 @@
+Questao 2 (4 pontos)
+Escreva uma funcao para decidir se num tabuleiro de jogo da velha ha um vencedor e, caso exista,
+
+qual
+6.0 simbolo associado
+a ele.
+Sua funcéo deve verificar as seguintes situagdées anémalas:
+1. Ocorr
+de mais
+éncia
+de um vencedor
+
+2. Ocorréncia de mais de dois tipos de simbolos associados aos jogadores
+
+
