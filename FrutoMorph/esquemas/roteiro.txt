@@ -1,0 +1,48 @@
+1. Introdução
+2. Estrutura Geral do Projeto
+3. Detalhamento das Funções
+4. Resultados
+5. Desafios Encontrados
+6. Conclusão
+7. Referências
+
+1. Introdução
+Objetivo do Projeto:
+Motivação:
+
+2. Estrutura Geral do Projeto
+Explicação do Fluxo de Trabalho:
+
+Leitura da Imagem: Leitura da imagem contendo as frutas.
+
+Pré-processamento (Escala de Cinza e Filtro Mediano): Redução de ruído e transformação da imagem para uma representação mais simples.
+
+Detecção de Bordas (Filtro Sobel): Encontrar as bordas da imagem para destacar os contornos das frutas.
+
+Binarização: Converter a imagem em uma versão binária (preto e branco) para facilitar a identificação de formas.
+
+Transformada de Hough Circular: Detectar círculos (frutas) na imagem.
+
+Eliminação de Círculos Próximos: Remover círculos redundantes ou muito próximos.
+
+Cálculo de Cor Média e Identificação da Fruta: Identificar a fruta com base na cor média da área do círculo.
+
+Exibição dos Resultados: Mostrar as frutas identificadas na imagem.
+
+3. Detalhamento das Funções
+Funções Principais:
+
+4. Resultados
+Exibição de Imagens Antes e Depois:
+
+Resultados numéricos:
+
+Identificação de frutas:
+
+5. Desafios Encontrados
+
+6. Conclusão
+Resumo dos Resultados:
+Próximos Passos:
+
+7. Referências

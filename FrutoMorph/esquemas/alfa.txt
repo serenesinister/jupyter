@@ -1,0 +1,19 @@
+from PIL import Image
+
+def remover_canal_alfa(imagem): #função usada para remover a transparênica das imagens antes do projeto principal
+    #abre a imagem
+    img = Image.open(imagem)
+    
+    if img.mode == 'RGBA': #verifica se a imagem tem canal alfa (transparência)
+        #converte a imagem para RGB (remove o canal alfa)
+        img_rgb = img.convert('RGB')
+        return img_rgb
+    else:#se não tiver canal alfa, retorna a imagem original
+        return img
+
+#diretório da imagem
+caminho_imagem = r'C:\Users\Wemerson\Downloads\FrutoMorph\dataset\frutas00.png'
+
+#remove o canal alfa e salva a imagem com a extensão correta
+imagem_sem_alpha = remover_canal_alfa(caminho_imagem)
+imagem_sem_alpha.save(r'C:\Users\Wemerson\Downloads\FrutoMorph\dataset\frutas00_sem_alpha.png')

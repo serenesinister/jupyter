@@ -1,0 +1,7 @@
+Equipe: Wemerson Soares
+
+Temas:
+      - Detecção de Frutas (minha sugestão)
+      - Detecção de veículos
+      - Detecção de placas de veículos
+      - Leitor de código de barras 1D
